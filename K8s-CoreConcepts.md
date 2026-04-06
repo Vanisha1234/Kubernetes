@@ -257,18 +257,16 @@ Apply changes:
 kubectl apply -f pod.yaml
 ```
 
+---
 
+## REPLICATION CONTROLLER & REPLICASETS
 
-
-
-
-
-REPLICATION CONTROLLER & REPLICASETS
-Helps to prevent downtime by maintaining the desired number of pods at all times for high availability.
-It can also replace an existing unhealthy pod if the desired number of pod is just 1.
-It is also responsible for load balancing and scaling across multiple pods as well as multiple nodes in case of increasing load.
-
-Replication-controller definition file - rc.yaml
+### Overview
+- Helps prevent downtime by maintaining the desired number of pods at all times, ensuring high availability.
+- It can also replace an existing unhealthy pod, even if the desired number of pods is just 1.
+- It is also responsible for load balancing and scaling across multiple pods, as well as across multiple nodes in case of increasing load.
+### Replication-Controller Definition File
+```bash
 apiVersion: v1 
 kind: ReplicationController
 metadata:
@@ -288,11 +286,18 @@ spec:
          - name: nginx-cont
            image: nginx
   replicas: 3 #number of replicas
-
-To create a replication controller definition file - kubectl create -f rc.yaml
-To list replicasets - kubectl get replicationcontroller
-
-ReplicaSet definition file - rs.yaml
+```
+### Managing Replication Controller Configurations
+To create a replication controller definition file:
+```bash
+kubectl create -f rc.yaml
+```
+To list replicasets:
+```bash
+kubectl get replicationcontroller
+```
+### ReplicaSet Definition File
+```bash
 apiVersion: apps/v1 
 kind: ReplicaSet
 metadata:
@@ -315,18 +320,29 @@ spec:
   selector: #helps replicaset identify what pods falls under it
      matchLabels:
         type: frontend
-To update a replicaset - kubectl scale --replicas=6 rs.yaml
-Another way is to update the yaml file and run - kubectl replace -f rs.yaml ; to replace the replicaset
+```
+### Managing ReplicaSet Configurations
+To update a replicaset:
+```bash
+kubectl scale --replicas=6 rs.yaml
+```
+Another way is to update the yaml file itself and run the following command to replace the replicaset:
+```bash
+kubectl replace -f rs.yaml
+```
 
-DEPLOYMENT
-Responsible for:
-Deploying multiple instances of webserver
-To update multiple docker instances seamlessly using rolling update strategy
-To carry out easy rollbacks incase of bugs and issues seamlessly altogether.
-To make changes to application running on multiple docker instances
+---
 
-Pod help us deploying the single instance of our application; replicaset help us deploy mutliple pods; deployment allow us to upgrade the underlying instances seamlessly
-Deployment definition file - (Similar to replicaset just the kind changes)
+## DEPLOYMENT
+
+### Overview
+- Deploying multiple instances of a web server
+- Updating multiple Docker instances seamlessly using a rolling update strategy
+- Carrying out easy rollbacks in case of bugs and issues
+- Making changes to applications running on multiple Docker instances
+> Pods help us deploy a single instance of our application; ReplicaSets help us deploy multiple pods; Deployments allow us to upgrade the underlying instances seamlessly.
+### Deployment Definition File
+```bash
 apiVersion: apps/v1 
 kind: Deployment
 metadata:
@@ -349,26 +365,47 @@ spec:
   selector: 
      matchLabels:
         type: frontend
+```
+### Managing Deployment Configurations
+To create a deployment:
+```bash
+kubectl create -f deployment.yaml
+```
+To list deployments:
+```bash
+kubectl get deployments
+```
+Deployment automatically creates a replicaset hence run the following command to list replicaset created:
+```bash
+kubectl get replicaset
+```
+Replicaset automatically creates pods hence run the following command to list the running pods:
+```bash
+kubectl get pods
+```
+To list all the created objects at once:
+```bash
+kubectl get all 
+```
 
-To create a deployment - kubectl create -f deployment.yaml
-To list deployments - kubectl get deployments
-Deployment automatically creates a replicaset hence run - kubectl get replicaset; to list replicaset created
-Replicaset automatically created pods hence run - kubectl get pods; to list the running pods
-To list all the created objects at one run - kubectl get all 
+---
 
-SERVICES
-Enables Communication between various components within and outside the application; like connects frontend with backend pods
-Helps connect different applications and users
-Services enabling loose coupling between microservices in our application
+## SERVICES
 
-In case of external communication
-If we need to communicate with the application hosted on a pod, from outside the K8s cluster, we can use services insted on logging into the Node and then accessing.
-Since usecase of services include- listening on the port of the node and then forwarding requests to the port on the pod hosting the application. This type of service is known as node port service.
-Target port - The port on the pod; where the service forwards the request to.
-Port - The port on the service itself; the service has a virtual IP assigned to it known as cluster IP.
-NodePort - The port on the node. Node port has a range : 30000 - 32767
+### Overview
+- Enables communication between various components within and outside the application, such as connecting frontend pods with backend pods.
+- Helps connect different applications and users.
+- Services enable loose coupling between microservices in our application.
 
-Service Definition File of type NodePort- svc.yml
+> In case of external communication
+- If we need to communicate with an application hosted on a pod from outside the Kubernetes cluster, we can use Services instead of logging into the node and accessing it directly.
+### NodePort Service
+Since the use cases of Services include listening on a port of the node and forwarding requests to the port on the pod hosting the application, this type of Service is known as a NodePort Service.
+- TargetPort – The port on the pod where the Service forwards the request.
+- Port – The port on the Service itself; the Service has a virtual IP assigned to it known as ClusterIP.
+- NodePort – The port on the node. NodePort has a range of 30000–32767.
+### Service Definition File of type NodePort
+```bash
 apiVersion: v1
 kind: Service
 metadata:
@@ -382,19 +419,29 @@ spec:
   selector: #labels and selectors will be used to link the service to the pod to which the request is to be forwarded
       app: myapp
       type: frontend
-
-To create a service - kubectl create -f svc.yml
-To list the services - kubectl get services
-To describe a service - kubectl describe service serviceName
+```
+### Managing Service Configurations
+To create a service:
+```bash
+kubectl create -f svc.yml
+```
+To list the services:
+```bash
+kubectl get services
+```
+To describe a service:
+```bash
+kubectl describe service serviceName
+```
 We can now browse the application using the IP of the Node and the Port on the Node.
-
-Cluster Ip type of service- Virtual Ip created inside the cluster used to enable communication between different services like set of frontend servers communicating to set of backend services
-In case of various services running for eg set of frontend webservers and set of backen webservers; both needs to commnicate with each other but ips of pods are not static and may change if a pod is replaced hence it is not reliable for internal communication.
-Secondly it becomes difficult to decide which pod instance to forward traffic to when all are same.
-Hence this service helps in grouping the same pods together and provide a single interface to communicate.
-Each service is assigned a name and the ip which will be used by pods for communication.
-
-Service definition file of type Cluster IP- svc.yml
+### ClusterIp Service
+- A virtual IP is created inside the cluster and is used to enable communication between different services, such as a set of frontend servers communicating with a set of backend services.
+- In cases where multiple services are running—for example, a set of frontend web servers and a set of backend web servers—both need to communicate with each other. However, pod IPs are not static and may change if a pod is replaced, making them unreliable for internal communication.
+- Secondly, it becomes difficult to decide which pod instance to forward traffic to when all instances are the same.
+Hence Cluster IP service helps in grouping similar pods together and provides a single interface for communication.
+Each Service is assigned a name and an IP, which will be used by pods for communication.
+### Service Definition File of type ClusterIp
+```bash
 apiVersion: v1
 kind: Service
 metadata:
@@ -407,39 +454,66 @@ spec:
   selector: #to link svc to backend pods
       app: myapp
       type: backend
-
+```
 The svc can be accessed by the pods using the clusterIP or the service name.
+### Load Balancer Service
+- Helps distribute load across various web servers.
+- In case of multiple pod instances running the same application, each pod has the same labels, which are used in the LoadBalancer Service to link all the pods.
+- Once the pods are linked using labels, the Service automatically uses all the pods as endpoints to forward requests.
+- This Service acts as a built-in load balancer to distribute load.
+- In case pods are present on different nodes inside the cluster, no additional configuration is required since Kubernetes automatically spans across the nodes in the cluster and maps the target port to the same NodePort on all nodes. This way, the application can be accessed through any node IP using the same port.
+- Services are automatically updated if pods are added or removed.
 
-Load balancer type of service- Helps to distribute load across various webservers
-In case of multiple pod instances running of the same application , each pod has same labels which is used in Load balancer service to link all the pods with same labels.
-Once the pods are linked using labels, the service then automatically use all the pods as the endpoints to forward the request.
-This service acts as a built in loadbalancer to distribute load.
+---
 
-In case of pods present in different nodes inside the cluster; no additional configuration is required; k8s automatically spans across the nodes in the cluster and map the target port to the same nodePort on all the nodes in the cluster. This way the application can be access through any ip and the same port.
-Services are automatically updated if pos are added or removed.
+## NAMESPACES
 
-NAMESPACES
-An isolated environment that contains all the services like pods, svcs and deployments. There can be various namespaces like dev, prod and test. To isolate these environments namespaces are created so that users dont end up accidently making changes to another environment.
-The resources within the namespace can refer to each other by their names.
-To connect to service in the another namespace for eg - connection web pod to db pod in another namespace; we need to use - servicename.namespace.svc.cluster.local
-To list the pods in a specific namespace - kubectl get pods --namespace=kube-system
-To create a pod in a specific namespace - kubectl create -f pod.yml --namespace=blue-namespace
-To avoid using namespaces in commands repeatedly, define namespace under metadata of the pod definition file.
-
-Namespace definition file- ns.yml
+### Overview
+- An isolated environment that contains all the resources like pods, services (svcs), and deployments.
+- There can be various namespaces like dev, prod, and test.
+- Namespaces are created to isolate these environments so that users don’t accidentally make changes to another environment.
+- The resources within a namespace can refer to each other by their names.
+- To connect to a Service in another namespace (e.g., a web pod connecting to a DB pod in another namespace), we need to use:
+```bash
+servicename.namespace.svc.cluster.local
+```
+### Namespace Definition File
+```bash
 apiVersion: v1
 kind: Namespace
 metadata:
   name: dev
-
-To create using definition file - kubectl create -f ns.yml
-To create directly without creating def. file - kubectl create namespace dev
-To avoid specifying ns repeatedly while running commands use - kubectl config set-context $(kubectl config current-context) --namespace=dev
-To view pod in all the namespaces - kubectl get pods --all-namespaces
-
-To limit resources of a namespace like cpu or memory usage; create a resource quota
-Resource Quota definition file - rq.yaml
-
+```
+### Managing Namespace Configurations
+To list the pods in a specific namespace:
+```bash
+kubectl get pods --namespace=kube-system
+```
+To create a pod in a specific namespace 
+```bash
+kubectl create -f pod.yml --namespace=blue-namespace
+```
+> To avoid defining namespaces in command line repeatedly, define the namespace under the metadata section of the pod definition file.
+To create using definition file:
+```bash
+kubectl create -f ns.yml
+```
+To create a namespace directly without creating def. file
+```bash
+kubectl create namespace <Namespace Name>
+```
+To avoid specifying ns repeatedly while running commands use:
+```bash
+kubectl config set-context $(kubectl config current-context) --namespace=dev
+```
+To view pod in all the namespaces:
+```bash
+kubectl get pods --all-namespaces
+```
+### Resource Quota
+To limit the resources of a namespace, such as CPU or memory usage, create a ResourceQuota.
+### ResourceQuota Definition File
+```bash
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -452,10 +526,15 @@ spec:
     requests.memory: 5Gi
     limits.cpu: "10"
     limits.memory: 10 Gi
-    
- To create resource quota via definition file - kubectl create -f rq.yaml     
+```   
+To create resource quota via definition file:
+```bash
+kubectl create -f rq.yaml
+```
+
+---
   
-IMPERATIVE & DECLARATIVE
+## IMPERATIVE & DECLARATIVE
 Imperative Approach means specifying what and how to do.
 Declarative Approach means specifying what to do instead of specifying the details. The rest is handled by the system itself.
 
