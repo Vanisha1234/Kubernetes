@@ -3,6 +3,12 @@ A comprehensive guide to **Kubernetes core concepts**, components, objects, and 
 
 ---
 
+## K8s Architecture
+
+<img width="2100" height="1241" alt="kubernetes_architecture1" src="https://github.com/user-attachments/assets/95ae96a8-c655-4505-ac70-e92c92b9d006" />
+
+---
+
 ## ETCD
 
 ### Overview
@@ -647,22 +653,15 @@ To create a service and simultaneously create a pod and expose it: (Service name
 kubectl run httpd --image=httpd:alpine --port=80 --expose
 ```
 
+---
 
+## KUBECTL COMMAND
+- To list all resources – ```kubectl api-resources```; lists names, short names, API versions, and other details about all the resources
+- To explain an object – ```kubectl explain pod```; for detailed information – ```kubectl explain pod --recursive```
 
-To create a pod - kubectl run nginx --image=nginx ; Generate POD Manifest YAML file (-o yaml). Don't create it(--dry-run) -  kubectl run nginx --image=nginx --dry-run=client -o yaml
-To create a deployment - kubectl create deployment --image=nginx nginx ; Generate Deployment YAML file (-o yaml). Don't create it(--dry-run) - kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
-To save the YAML definition file generated to a file and modify - kubectl create deployment nginx --image=nginx --dry-run=client -o yaml > nginx-deployment.yaml
-Generate Deployment with 4 Replicas - kubectl create deployment nginx --image=nginx --replicas=4
-Create a Service named redis-service of type ClusterIP to expose pod redis on port 6379 - kubectl expose pod redis --port=6379 --name redis-service --dry-run=client -o yaml
-Create a Service named nginx of type NodePort to expose pod nginx's port 80 on port 30080 on the nodes:] - kubectl expose pod nginx --type=NodePort --port=80 --name=nginx-service --dry-run=client -o yaml
-To create a service and simultaneously create a pod and expose it, run - kubectl run httpd --image=httpd:alpine --port=80 --expose (service name and pod name will be same)
+### KUBECTL APPLY COMMAND
+- ```kubectl apply``` stores the changes made to the last applied configuration file.
+- All three files - the local file, the last applied configuration file, and the Kubernetes memory file are compared, and the final changes are identified and applied
+The last applied configuration file helps keep track of what changes are made when the files are compared.
 
-KUBECTL COMMAND
-To list all resources - kubectl api-resources ; list names , shortnames, apiVersions and other details about all the resources.
-to explain an object, run - kubectl explain pod ; For details - kubectl explain pod --recursive
-
-KUBECTL APPLY COMMAND
-Kubectl apply command stores the changes made to last applied configuration file .
-All the three file - local file, last applied config file and the kubernetes memory file are compared and the final changes are identified to be applied.
-last applied config file help us keep track of what changes are made when the files are compared.
-
+---
