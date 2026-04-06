@@ -535,37 +535,119 @@ kubectl create -f rq.yaml
   
 ## IMPERATIVE & DECLARATIVE
 Imperative Approach means specifying what and how to do.
-Declarative Approach means specifying what to do instead of specifying the details. The rest is handled by the system itself.
+Declarative Approach means specifying what to do instead of specifying the details; the rest is handled by the system itself.
 
-Example of Imperative Approach
-Imperative commands run once and require long commands in case of complex environments. They are limited to user who ran these commands. Difficult to keep track of.
-To create a pod - kubectl run --image=nginx nginx                                               |
-To create a deployment - kubectl create deployment --image=nginx nginx                          |  --------> To create an object
-To create a service to expose deployment - kubectl expose deployment nginx --port 80            |
+### Example of Imperative Approach
+- Imperative commands run once and require long commands in case of complex environments
+- They are limited to the user who ran these commands and are difficult to keep track of \
+> To create an object
+Pod creation:
+```bash
+kubectl run --image=nginx nginx
+```
+Deployment creation:
+```bash
+kubectl create deployment --image=nginx nginx
+```
+Service creation to expose deployment:
+```bash
+To create a service to expose deployment - kubectl expose deployment nginx --port 80
+```
+> To update an object
+Edit the existing object:
+```bash
+kubectl edit deployment nginx
+```                                 
+Scaling a deployment:
+```bash
+kubectl scale deployment nginx --replicas=5
+```                          
+Updating an image on deployment:
+```bash
+kubectl set image deployment nginx nginx=nginx:1.18
+```
+> Using files
+To create an object specifying file:
+```bash
+kubectl create -f nginx.yaml
+```
+To edit an object specifying file:
+```bash
+kubectl replace -f nginx.yaml
+```
+To delete an object specifying file:
+```bash
+kubectl delete -f nginx.yaml
+```
+To create , update and delete an existing object:
+```bash
+kubectl apply -f nginx.yaml
+```
+We create YAML files, which are easy to keep track of, share, and update.
+> Ways of Editing an Existing Object
+1. Using ```kubectl edit deployment nginx```
+- This command opens a YAML file similar to the one used to create the object, but with additional fields
+- This is not the original file; it is stored in Kubernetes memory
+- Changes made here are applied live \
+Difference:
+- Changes made in Kubernetes memory are not recorded in the local file
+- The local YAML file remains unchanged  
+2. Better approach:
+- Make changes in the local YAML file
+- Run: ```kubectl replace -f nginx.yaml```
+3. To completely delete of recreate an object,
+- Run: ```kubectl replace --force -f nginx.yaml```
 
-To edit the existing object - kubectl edit deployment nginx                                     |
-To scale a deployment - kubectl scale deployment nginx --replicas=5                             |  ---------> To update an object
-to update an image on deployment - kubectl set image deployment nginx nginx=nginx:1.18          |
-To create an object specifying file - kubectl create -f nginx.yaml
-To edit an object specifying file - kubectl replace -f nginx.yaml
-To delete an object specifying file - kubectl delete -f nginx.yaml
+### Examples of Declarative Approach
+- In the declarative approach, we use the same YAML files, but instead of ```create``` or ```replace```, we use:
+```kubectl apply -f nginx.yaml```
+- ```Kubectl apply``` is intelligent enough to create the object if it does not exist
+- To create multiple objects:
+  - Specify them in a directory
+  - Run: ```kubectl apply -f /path/to/directory```
+- To update the existing file:
+  - Make changes in the config file
+  - Run: ```kubectl apply -f nginx.yaml```
 
-To create , update and delete an object - kubectl apply -f nginx.yaml
-We create yaml files, which are easy to keep trackof, easy to share and update.
-Ways of editing the existing object
-1. if used - kubectl edit deployment nginx
-This command will open similar yaml file that was used to create an object but with additional fields - This is not the file used to create an object. This is similar yaml file in k8s memory and changes made to it will be applied on live.
-However, there is a difference between local yaml file and the k8s memory yaml file-
-The changes applied to k8s memory yaml file are not recorded anywhere and once the changes are made, we are left with local file which has no changes in it.
-2. Better approach is to make changes to local yaml file and then run - kubectl replace -f nginx.yaml
-3. To completely delete of recreate an object - kubectl replace --force -f nginx.yaml
+### Useful Commands
+To create a pod:
+```bash
+kubectl run nginx --image=nginx
+```
+Generate POD manifest YAML (without creating it):
+```bash
+kubectl run nginx --image=nginx --dry-run=client -o yaml
+```
+To create a deployment:
+```bash
+kubectl create deployment --image=nginx nginx
+```
+Generate Deployment YAML (without creating it):
+```bash
+kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
+```
+To save generated YAML to a file:
+```bash
+kubectl create deployment nginx --image=nginx --dry-run=client -o yaml > nginx-deployment.yaml
+```
+Generate deployment with 4 replicas:
+```bash
+kubectl create deployment nginx --image=nginx --replicas=4
+```
+Create a Service named redis-service of type ClusterIP to expose pod redis on port 6379:
+```bash
+kubectl expose pod redis --port=6379 --name redis-service --dry-run=client -o yaml
+```
+Create a Service named nginx of type NodePort to expose pod nginx’s port 80 on port 30080 on the nodes:
+```bash
+kubectl expose pod nginx --type=NodePort --port=80 --name=nginx-service --dry-run=client -o yaml
+```
+To create a service and simultaneously create a pod and expose it: (Service name and pod name will be the same)
+```bash
+kubectl run httpd --image=httpd:alpine --port=80 --expose
+```
 
 
-Examples of Declarative Approach
-In case of Declarative approach we use the same yaml files that was used in imperative approach but in-place of create or replace commands we use - kubectl apply -f nginx.yaml; to manage the object
-Kubectl apply command is intelligent enough to create an object if it doesnt exist.
-To create multiple objects, the objects can be specifies in a directory and the directory path can be provided to the apply command - kubectl apply -f /path/to/directory
-To update the existing fie, changes are to be made in congif file and the command to be run is - kubectl apply -f nginx.yaml
 
 To create a pod - kubectl run nginx --image=nginx ; Generate POD Manifest YAML file (-o yaml). Don't create it(--dry-run) -  kubectl run nginx --image=nginx --dry-run=client -o yaml
 To create a deployment - kubectl create deployment --image=nginx nginx ; Generate Deployment YAML file (-o yaml). Don't create it(--dry-run) - kubectl create deployment --image=nginx nginx --dry-run=client -o yaml
