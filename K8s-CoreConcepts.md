@@ -437,9 +437,8 @@ We can now browse the application using the IP of the Node and the Port on the N
 ### ClusterIp Service
 - A virtual IP is created inside the cluster and is used to enable communication between different services, such as a set of frontend servers communicating with a set of backend services.
 - In cases where multiple services are running—for example, a set of frontend web servers and a set of backend web servers—both need to communicate with each other. However, pod IPs are not static and may change if a pod is replaced, making them unreliable for internal communication.
-- Secondly, it becomes difficult to decide which pod instance to forward traffic to when all instances are the same.
-Hence Cluster IP service helps in grouping similar pods together and provides a single interface for communication.
-Each Service is assigned a name and an IP, which will be used by pods for communication.
+- Secondly, it becomes difficult to decide which pod instance to forward traffic to when all instances are the same. Hence, Cluster IP service helps in grouping similar pods together and provides a single interface for communication.
+- Each Service is assigned a name and an IP, which will be used by pods for communication.
 ### Service Definition File of type ClusterIp
 ```bash
 apiVersion: v1
