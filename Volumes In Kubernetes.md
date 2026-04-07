@@ -182,6 +182,11 @@ Once storage class is specified in PVC and PVC is created:
 - PVC is bound to that PV
 
 ### Additional Parameters
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e473b462-2de1-48f9-bcf5-01cedd19f547" width="600"/>
+</p>
+
 StorageClass can include parameters specific to the provisioner:
 ```bash
 parameters:
@@ -193,9 +198,5 @@ parameters:
 - Silver → Standard disks
 - Gold → SSD
 - Platinum → SSD with replication
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/e473b462-2de1-48f9-bcf5-01cedd19f547" width="600"/>
-</p>
 
 ---
