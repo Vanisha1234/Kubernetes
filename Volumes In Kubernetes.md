@@ -176,7 +176,7 @@ spec:
     requests:
       storage: 500Mi
 ```
-> Once storage class is specified in PVC and PVC is created:
+Once storage class is specified in PVC and PVC is created:
 - StorageClass provisions storage automatically
 - A PV is created dynamically
 - PVC is bound to that PV
