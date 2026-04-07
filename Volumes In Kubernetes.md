@@ -1,21 +1,20 @@
-Volumes in Kuberentes
+## Volumes In Kuberentes
+### Docker Volumes
+- Containers are short-lived. The data within a container is destroyed along with the container itself.
+- Hence, to persist data, we use volumes.
+- The data is stored in the volume so it remains available even if the container is deleted.
+---
+### In Kubernetes
+- Similarly, Pods in Kubernetes are transient in nature, meaning data is lost when the Pod is deleted.
+- To persist data even after a Pod is destroyed, we attach a volume to the Pod.
+- Once a volume is created, it can be backed by a hostPath, which is a directory on the node.
+- Any data written to the volume is stored in that directory on the node.
+- To access the volume from within a container, we mount the volume to a directory inside the container.
 
-Docker Volumes
-- containers are short lived. The data within the container is destroyed along with the container itself.
-- Hence, to persist data with the container we use volumes. The data of the container is retained in the volume to persist the data permanently even if the container is deleted.
-
-Volumes in Kubernetes
-Similarly pods in kubernetes are transeint in nature, hence the data processed by pod is destroyed along with the pod.
-To persist data even after the pod is destroyed, we attach a volume to the pod.
-Once a volume is created we store it by providing a hostpath that is directory on a host.
-Any data created in the volume is stored in the directory on the node
-After the creation of volumes, to access it from within the container, we mount the volume to the directory withing the container.
-
-
-Storing volume on the host path is not ideal choice in case of multiple node
-Since all the nodes will be using the same path and will be expecting all nodes to have same data which is not the case.
-
-Volume definition file example:
+> ⚠️ Storing volumes using hostPath is not ideal in a multi-node cluster.
+---
+### Volume Definition File Example
+```bash
 apiVersion: v1
 kind: Pod
 metadata:
@@ -26,28 +25,31 @@ spec:
       image: alpine
       command: ["/bin/sh", "-c"]
       args: ["shuf -i 0-100 -n 1 >> /opt/number.out;"]
-      volumeMounts:                       # to mount the volume within the container in order to access it from the container
+      volumeMounts:                       # Mount the volume inside the container
         - mountPath: /opt
           name: data-volume
   volumes:
-    - name: data-volume                   # creation of new volume
-      hostPath:                           # host path to store a volume
+    - name: data-volume                   # Volume creation
+      hostPath:                           # Directory on the host
         path: /data
         type: Directory
-
-Volume configuration generally goes within the pod definition file.
-But in case of large environment, it becomes hectic to configure volume on each pod.
-Any change made, is required to be made on all ther pods everytime.
-
-
-In order to manage storage more centrally , we make use of:
-Persistent Volume:
+```
+---
+### Problem with Direct Volume Configuration
+- Volume configuration is defined inside the Pod specification.
+- In large environments, managing volumes for each Pod becomes difficult.
+- Any change must be updated across all Pods manually.
+---
+### Persistent Volume
 <img width="900" height="510" alt="pv_diagram" src="https://github.com/user-attachments/assets/cba32d85-dfbe-4f52-aa8c-f850b8d80de8" />
 
-A persistent Volume is a cluster wide pool of storage volumes, configured by an administrator to be used by user deployer application on a container.
-The user can select storage from this pool using persistent volume claim.
-
-pv definition file:
+A Persistent Volume (PV) is a cluster-wide pool of storage created by an administrator.
+It can be used by applications deployed in the cluster and help manage storage centrally.
+- Users do not directly use PVs.
+- Instead, they request storage using Persistent Volume Claims (PVCs).
+---  
+### PV Definition File:
+```bash
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -60,7 +62,7 @@ spec:
   awsElasticBlockStore:                   # Volume type used (host path is not an ideal choice in case of production)
     volumeID: <volume-id>                 # AWS elastic block storage is one of the supported storage solutions used here
     fsType: ext4
-
+```
 
  To create a volume:
  kubectl create -f pv-definition.yaml
