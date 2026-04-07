@@ -1,4 +1,4 @@
-## Volumes In Kuberentes
+## Volumes In Kubernetes
 ### Docker Volumes
 - Containers are short-lived. The data within a container is destroyed along with the container itself.
 - Hence, to persist data, we use volumes.
