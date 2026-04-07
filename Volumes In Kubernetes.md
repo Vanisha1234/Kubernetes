@@ -97,6 +97,9 @@ spec:
 To create a persistent volume claim:
 kubectl create -f pvc-definition.yaml
 
+<img width="1200" height="725" alt="pv_pvc_diagram" src="https://github.com/user-attachments/assets/c3e0fcbf-0475-4e86-8ce9-df26a3821a68" />
+
+
 Deleting a PVC:
 To delete a pvc:
 kubectl delete persistentvolumeclaim <pvc name>
@@ -106,6 +109,8 @@ However they are not available to use by any other claims.
 They can be set to DELETE along with the PVCs.
 
 Storage Class
+<img width="1280" height="738" alt="dynamic_provisioning" src="https://github.com/user-attachments/assets/f95f7f87-1410-435d-990b-3621a316e755" />
+
 when we create a pv
 pv definition file:
 apiVersion: v1
@@ -160,3 +165,4 @@ parameters:
 
 Each parameters are specific to the provisioner used. 
 We can also define the class of storage we want to use like silver class for standard disks, gold class for ssd drives and platinum class for ssd drives along with replication.
+<img width="1442" height="596" alt="ChatGPT Image Apr 7, 2026, 03_13_11 PM" src="https://github.com/user-attachments/assets/e473b462-2de1-48f9-bcf5-01cedd19f547" />
