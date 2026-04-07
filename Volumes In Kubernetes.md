@@ -190,9 +190,9 @@ parameters:
 ```
 
 > Storage classes can also represent tiers like:
-Silver → Standard disks
-Gold → SSD
-Platinum → SSD with replication
+- Silver → Standard disks
+- Gold → SSD
+- Platinum → SSD with replication
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/e473b462-2de1-48f9-bcf5-01cedd19f547" width="600"/>
