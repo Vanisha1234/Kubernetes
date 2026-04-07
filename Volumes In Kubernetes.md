@@ -3,7 +3,9 @@
 - Containers are short-lived. The data within a container is destroyed along with the container itself.
 - Hence, to persist data, we use volumes.
 - The data is stored in the volume so it remains available even if the container is deleted.
+  
 ---
+
 ### In Kubernetes
 - Similarly, Pods in Kubernetes are transient in nature, meaning data is lost when the Pod is deleted.
 - To persist data even after a Pod is destroyed, we attach a volume to the Pod.
@@ -12,7 +14,9 @@
 - To access the volume from within a container, we mount the volume to a directory inside the container.
 
 > ⚠️ Storing volumes using hostPath is not ideal in a multi-node cluster.
+
 ---
+
 ### Volume Definition File Example
 ```bash
 apiVersion: v1
@@ -34,20 +38,25 @@ spec:
         path: /data
         type: Directory
 ```
----
+
 ### Problem with Direct Volume Configuration
 - Volume configuration is defined inside the Pod specification.
 - In large environments, managing volumes for each Pod becomes difficult.
 - Any change must be updated across all Pods manually.
+  
 ---
+
 ### Persistent Volume
-<img width="900" height="510" alt="pv_diagram" src="https://github.com/user-attachments/assets/cba32d85-dfbe-4f52-aa8c-f850b8d80de8" />
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cba32d85-dfbe-4f52-aa8c-f850b8d80de8" width="600"/>
+</p>
 
 A Persistent Volume (PV) is a cluster-wide pool of storage created by an administrator.
 It can be used by applications deployed in the cluster and help manage storage centrally.
 - Users do not directly use PVs.
 - Instead, they request storage using Persistent Volume Claims (PVCs).
----  
+
 ### PV Definition File:
 ```bash
 apiVersion: v1
@@ -63,28 +72,38 @@ spec:
     volumeID: <volume-id>                 # AWS elastic block storage is one of the supported storage solutions used here
     fsType: ext4
 ```
+### Operational Commands
+To create a volume:
+```bash
+kubectl create -f pv-definition.yaml
+```
+To list th PV:
+```bash
+kubectl get persistentvolume
+```
 
- To create a volume:
- kubectl create -f pv-definition.yaml
+---
 
- To list th PV:
- kubectl get persistentvolume
+### Persistent Volume Claim
+- PV and PVC are separate objects in Kubernetes.
+- The administrator creates PVs, and users create PVCs to request storage.
+  
+### Binding Process
+Kubernetes binds a PVC to a suitable PV based on:
+- Capacity
+- Access modes
+- Storage class
+- Other properties
+  
+### Key points:
+- Each PVC is bound to one PV.
+- If multiple PVs match, selection can be controlled using labels and selectors.
+- If no PV is available, the PVC remains in Pending state.
+- A PVC can bind to a larger PV if no exact match exists.
+- Once bound, no other PVC can use that PV.
 
-
- Persistent Volume Claims:
- PV and PVC are two seperate objects in kubernetes.
- An administrator created a persistent volume and a user creates a persistent volume claims to use the storage.
-
- Once the pvc are created, kubernetes binds the persistent volumes to claims based on the requests and properties set on the volumes.
- Every pvc is bound to single persistent volume.
- K8s make sures during binding process:
- - The persistent volume has sufficient capacity as requested by the pvc and any other requested properties like access modes, volume modes, storage class etc.
- In case there are multiple volumes that satisfies the same request, we can still bind to the volume of our choice using labels and selectors.
-
- - If no volumes are present, the pvc will remain in pending state until newer volume is available in the cluster.
- - A pvc can be attached to PV with greater capacity than needed if no other better matches exists and since pvc and pv has one to one relation, no other pvc can be attached.
-
-PVC definition file:
+### PVC Definition File:
+```bash
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -95,56 +114,56 @@ spec:
   resources:
     requests:
       storage: 500Mi
-
+```
 To create a persistent volume claim:
+```bash
 kubectl create -f pvc-definition.yaml
-
-<img width="1200" height="725" alt="pv_pvc_diagram" src="https://github.com/user-attachments/assets/c3e0fcbf-0475-4e86-8ce9-df26a3821a68" />
-
-
+```
 Deleting a PVC:
-To delete a pvc:
+```bash
 kubectl delete persistentvolumeclaim <pvc name>
+```
+- By default, PVs have a Retain policy.
+- Deleting a PVC does not delete the PV.
+- The PV remains but is not available for new claims.
+- This behavior can be changed to Delete policy if required.
 
-The underlying persistent volume is not deleted even if the pvc is destroyed, since by default pvs are set to retain policy and hence they exists until manually deleted.
-However they are not available to use by any other claims.
-They can be set to DELETE along with the PVCs.
+---
 
-Storage Class
-<img width="1280" height="738" alt="dynamic_provisioning" src="https://github.com/user-attachments/assets/f95f7f87-1410-435d-990b-3621a316e755" />
+> Working flow of PV and PVC together:
 
-when we create a pv
-pv definition file:
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pv-vol1
-spec:
-  accessModes:                            # Access mode defines how the volume should be mounted on the host(ReadWriteOnce, ReadOnlyMany, ReadWriteMany)
-    - ReadWriteOnce
-  capacity:                               # Storage to be reserved for the volume
-    storage: 1Gi
-  awsElasticBlockStore:                   # Volume type used (host path is not an ideal choice in case of production)
-    volumeID: <volume-id>                 # AWS elastic block storage is one of the supported storage solutions used here
-    fsType: ext4
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c3e0fcbf-0475-4e86-8ce9-df26a3821a68" width="600"/>
+</p>
 
-We have used a aws elastic block storage here, hence we need to manually provision a storage block on aws before creating a pv with a same name in kubernetes.
-This is called static provisioning.
+---
 
-Storage class help provisioning the volume automatically when the application needs it.
-Storage class can help define a provisioner like aws, google storage etc. that can automatically provision storage on cloud and attach it to pod when claim is made.
-This is called dynamic provisioning of volumes.
+### Storage Class
 
-Storage class definition file:
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f95f7f87-1410-435d-990b-3621a316e755" width="600"/>
+</p>
+
+> Static Provisioning
+- When creating a PV manually (e.g., using AWS EBS), you must first create the storage resource externally.
+- Then define it in Kubernetes.
+- This is called static provisioning.
+
+> Dynamic Provisioning
+- A StorageClass automates volume creation when required by an application.
+- It defines a provisioner (e.g., AWS, GCP, Azure) to automate.
+
+### StorageClass Definition File:
+```bash
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: google-storage
   provisioner: kubernetes.io/gce-pd
+```
 
-Once we have a storage class created, we do not require a pv anymore because the pv and any other associated storage is going to be created automatically once the storage class is created.
-
-For PVC to used storage class name, this is how we specify:
+### Using StorageClass in PVC
+```bash
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -156,15 +175,27 @@ spec:
   resources:
     requests:
       storage: 500Mi
+```
+> Once storage class is specified in PVC and PVC is created:
+- StorageClass provisions storage automatically
+- A PV is created dynamically
+- PVC is bound to that PV
 
-Once the storage class is defined in the pvc , the storage class uses the defined provisioner to provision a storage space on cloud and then creates a pv and bind it to the pvc.
-PV is still created but this time we do not have to manually create it anymore.
-
-Additionaly parametres can be passed with the type of storage class which is in use like
+### Additional Parameters
+StorageClass can include parameters specific to the provisioner:
+```bash
 parameters:
-  type:               # type of disk
-  replication-type:   # replication enabled or disabled
+  type:               # Disk type (e.g., SSD, HDD)
+  replication-type:   # Replication settings
+```
 
-Each parameters are specific to the provisioner used. 
-We can also define the class of storage we want to use like silver class for standard disks, gold class for ssd drives and platinum class for ssd drives along with replication.
-<img width="1442" height="596" alt="ChatGPT Image Apr 7, 2026, 03_13_11 PM" src="https://github.com/user-attachments/assets/e473b462-2de1-48f9-bcf5-01cedd19f547" />
+> Storage classes can also represent tiers like:
+Silver → Standard disks
+Gold → SSD
+Platinum → SSD with replication
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e473b462-2de1-48f9-bcf5-01cedd19f547" width="600"/>
+</p>
+
+---
